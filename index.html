@@ -116,6 +116,30 @@
       margin-top: 12px;
       min-height: 20px;
     }
+
+    .live {
+      background: #eefbf3;
+      border: 1px solid #b9e6c8;
+      padding: 14px;
+      border-radius: 12px;
+      margin-top: 14px;
+    }
+
+    .timer {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 8px 0;
+    }
+
+    .pulse {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #18a957;
+      box-shadow: 0 0 0 5px rgba(24,169,87,.12);
+      margin-right: 8px;
+    }
   </style>
 </head>
 
@@ -179,15 +203,12 @@
       <h1>Continue to Video</h1>
 
       <div class="notice">
-
-        <strong>Location Permission</strong>
-
+        <strong>📍 Location Permission</strong>
         <p class="small">
-          This page will request your browser's location permission.
-          Your location will only be shared if you explicitly choose
-          <b>Allow</b>.
+          Your location will be shared only after you explicitly choose
+          <b>Allow & Continue</b>. Tracking automatically stops after
+          <b>30 minutes</b>.
         </p>
-
       </div>
 
       <button id="allow">
@@ -197,6 +218,14 @@
       <button id="deny" class="secondary">
         Deny & Do Not Continue
       </button>
+
+      <div id="livePanel" class="live hidden">
+        <div><span class="pulse"></span><strong>Live tracking active</strong></div>
+        <div class="timer" id="countdown">30:00</div>
+        <div class="small" id="lastUpdate">Waiting for location...</div>
+        <button id="openVideo" class="secondary">Open Video</button>
+        <button id="stopTracking" class="danger">Stop Sharing</button>
+      </div>
 
       <div id="trustedStatus" class="status small"></div>
 
@@ -399,6 +428,7 @@
                 {
                   videoUrl: videoUrl,
                   createdAt: Date.now(),
+                  expiresAt: Date.now() + (30 * 60 * 1000),
                   status: "waiting"
                 }
               );
@@ -581,281 +611,246 @@
 
 
     /* =====================================================
-       TRUSTED PERSON MODE
+       TRUSTED PERSON MODE — 30 MINUTE CONSENT-BASED TRACKING
     ===================================================== */
 
     if (shareId) {
 
-      creator
-        .classList
-        .add("hidden");
-
-      trusted
-        .classList
-        .remove("hidden");
-
+      creator.classList.add("hidden");
+      trusted.classList.remove("hidden");
 
       let shareData = null;
+      let watchId = null;
+      let countdownTimer = null;
+      let trackingStartedAt = null;
+      let lastSavedAt = 0;
+      let stopped = false;
 
-
-      /* LOAD SHARE */
+      const TRACKING_MS = 30 * 60 * 1000;
+      const SAVE_EVERY_MS = 5000;
 
       async function loadShare() {
-
         try {
-
-          const snapshot =
-            await get(
-              ref(
-                db,
-                "shares/" + shareId
-              )
-            );
-
+          const snapshot = await get(
+            ref(db, "shares/" + shareId)
+          );
 
           if (!snapshot.exists()) {
-
-            $("trustedStatus")
-              .textContent =
+            $("trustedStatus").textContent =
               "This share link is invalid or expired.";
-
-            $("allow")
-              .disabled = true;
-
+            $("allow").disabled = true;
             return;
           }
 
+          shareData = snapshot.val();
 
-          shareData =
-            snapshot.val();
+          const expiresAt = Number(
+            shareData.expiresAt ||
+            (Number(shareData.createdAt || Date.now()) + TRACKING_MS)
+          );
 
+          if (Date.now() >= expiresAt) {
+            $("trustedStatus").textContent =
+              "This share link has expired.";
+            $("allow").disabled = true;
+            return;
+          }
 
-          $("trustedStatus")
-            .textContent =
-            "Please choose Allow to share your location and continue.";
+          $("trustedStatus").textContent =
+            "Choose Allow & Continue to start 30-minute live tracking.";
 
         } catch (error) {
-
           console.error(error);
-
-          $("trustedStatus")
-            .textContent =
+          $("trustedStatus").textContent =
             "Could not load this share link.";
-
-          $("allow")
-            .disabled = true;
-
+          $("allow").disabled = true;
         }
-
       }
 
+      function formatTime(ms) {
+        const total = Math.max(0, Math.ceil(ms / 1000));
+        const minutes = Math.floor(total / 60);
+        const seconds = total % 60;
+        return String(minutes).padStart(2, "0") + ":" +
+               String(seconds).padStart(2, "0");
+      }
+
+      function stopTracking(message = "Location sharing stopped.") {
+        if (stopped) return;
+        stopped = true;
+
+        if (watchId !== null) {
+          navigator.geolocation.clearWatch(watchId);
+          watchId = null;
+        }
+
+        if (countdownTimer) {
+          clearInterval(countdownTimer);
+          countdownTimer = null;
+        }
+
+        $("allow").disabled = true;
+        $("deny").disabled = true;
+        $("livePanel").classList.add("hidden");
+        $("trustedStatus").textContent = message;
+
+        // Best-effort status update. The local stop still happens
+        // even if the network request fails.
+        set(
+          ref(db, "shares/" + shareId + "/status"),
+          "tracking_stopped"
+        ).catch(console.warn);
+      }
+
+      function startCountdown() {
+        const endAt = trackingStartedAt + TRACKING_MS;
+
+        const tick = () => {
+          const remaining = endAt - Date.now();
+
+          if (remaining <= 0) {
+            $("countdown").textContent = "00:00";
+            stopTracking("30-minute tracking period ended automatically.");
+            return;
+          }
+
+          $("countdown").textContent = formatTime(remaining);
+        };
+
+        tick();
+        countdownTimer = setInterval(tick, 1000);
+      }
+
+      function saveLocation(position) {
+        if (stopped) return;
+
+        const now = Date.now();
+
+        // Limit database writes to roughly one update every 5 seconds.
+        if (now - lastSavedAt < SAVE_EVERY_MS) return;
+        lastSavedAt = now;
+
+        const loc = {
+          latitude: Number(position.coords.latitude),
+          longitude: Number(position.coords.longitude),
+          accuracy: Number(position.coords.accuracy),
+          timestamp: now
+        };
+
+        const locRef = push(
+          ref(db, "locations/" + shareId)
+        );
+
+        set(locRef, loc)
+          .then(() => {
+            $("lastUpdate").textContent =
+              "Last update: " + new Date(now).toLocaleTimeString() +
+              " • Accuracy: approximately " +
+              Math.round(loc.accuracy) + " m";
+          })
+          .catch(error => {
+            console.error(error);
+            $("trustedStatus").textContent =
+              "Tracking is active, but the latest location could not be saved.";
+          });
+      }
+
+      function beginTracking() {
+        trackingStartedAt = Date.now();
+        stopped = false;
+
+        $("allow").disabled = true;
+        $("deny").disabled = true;
+        $("livePanel").classList.remove("hidden");
+
+        $("trustedStatus").textContent =
+          "Location permission granted. Live tracking started.";
+
+        set(
+          ref(db, "shares/" + shareId + "/status"),
+          "tracking_active"
+        ).catch(console.warn);
+
+        startCountdown();
+
+        watchId = navigator.geolocation.watchPosition(
+          position => saveLocation(position),
+          error => {
+            console.warn("Geolocation error:", error);
+
+            if (error.code === 1) {
+              stopTracking(
+                "Location permission was denied. No location was collected."
+              );
+            } else if (error.code === 2) {
+              $("trustedStatus").textContent =
+                "Tracking is active, but device location is unavailable. Turn on Location.";
+            } else if (error.code === 3) {
+              $("trustedStatus").textContent =
+                "Tracking is active. Waiting for a location fix...";
+            } else {
+              $("trustedStatus").textContent =
+                "Tracking is active, but a location error occurred.";
+            }
+          },
+          {
+            // Faster mobile response than GPS-only high accuracy.
+            enableHighAccuracy: false,
+            timeout: 5000,
+            maximumAge: 30000
+          }
+        );
+      }
 
       loadShare();
 
+      $("allow").addEventListener("click", () => {
+        if (!shareData || stopped) return;
 
-      /* ALLOW */
+        if (!navigator.geolocation) {
+          $("trustedStatus").textContent =
+            "This browser does not support location access.";
+          return;
+        }
 
-      $("allow")
-        .addEventListener(
-          "click",
-          async () => {
+        $("trustedStatus").textContent =
+          "Please choose Allow in the browser location popup...";
 
-            if (!shareData)
-              return;
+        beginTracking();
+      });
 
+      $("openVideo").addEventListener("click", () => {
+        if (!shareData || !shareData.videoUrl) return;
 
-            if (!navigator.geolocation) {
-
-              $("trustedStatus")
-                .textContent =
-                "This browser does not support location access.";
-
-              return;
-            }
-
-
-            $("allow")
-              .disabled = true;
-
-            $("deny")
-              .disabled = true;
-
-
-            $("trustedStatus")
-              .textContent =
-              "Please choose Allow in the browser location popup...";
-
-
-            navigator.geolocation
-              .getCurrentPosition(
-
-                async position => {
-
-                  const loc = {
-
-                    latitude:
-                      Number(
-                        position.coords.latitude
-                      ),
-
-                    longitude:
-                      Number(
-                        position.coords.longitude
-                      ),
-
-                    accuracy:
-                      Number(
-                        position.coords.accuracy
-                      ),
-
-                    timestamp:
-                      Date.now()
-                  };
-
-
-                  try {
-
-                    const locRef =
-                      push(
-                        ref(
-                          db,
-                          "locations/" +
-                          shareId
-                        )
-                      );
-
-
-                    await set(
-                      locRef,
-                      loc
-                    );
-
-
-                    await set(
-                      ref(
-                        db,
-                        "shares/" +
-                        shareId +
-                        "/status"
-                      ),
-                      "location_received"
-                    );
-
-
-                    $("trustedStatus")
-                      .textContent =
-                      "Location shared successfully. Opening video...";
-
-
-                    setTimeout(
-                      () => {
-
-                        window.location.assign(
-                          shareData.videoUrl
-                        );
-
-                      },
-                      800
-                    );
-
-
-                  } catch (error) {
-
-                    console.error(error);
-
-                    $("trustedStatus")
-                      .textContent =
-                      "Location was allowed, but it could not be saved.";
-
-                    $("allow")
-                      .disabled = false;
-
-                    $("deny")
-                      .disabled = false;
-
-                  }
-
-                },
-
-
-                error => {
-
-                  console.warn(
-                    "Geolocation error:",
-                    error
-                  );
-
-
-                  $("allow")
-                    .disabled = false;
-
-                  $("deny")
-                    .disabled = false;
-
-
-                  if (error.code === 1) {
-
-                    $("trustedStatus")
-                      .textContent =
-                      "Location permission denied. No location was collected.";
-
-                  } else if (error.code === 2) {
-
-                    $("trustedStatus")
-                      .textContent =
-                      "Device location is unavailable. Turn on Location and try again.";
-
-                  } else if (error.code === 3) {
-
-                    $("trustedStatus")
-                      .textContent =
-                      "Location request timed out. Please try again.";
-
-                  } else {
-
-                    $("trustedStatus")
-                      .textContent =
-                      "Could not obtain location.";
-
-                  }
-
-                },
-
-
-                {
-                  enableHighAccuracy: true,
-                  timeout: 15000,
-                  maximumAge: 0
-                }
-
-              );
-
-          }
+        // Keep this tracking page open. The video opens separately so
+        // tracking can continue while this page remains active.
+        window.open(
+          shareData.videoUrl,
+          "_blank",
+          "noopener,noreferrer"
         );
+      });
 
+      $("stopTracking").addEventListener("click", () => {
+        stopTracking("You stopped location sharing.");
+      });
 
-      /* DENY */
+      $("deny").addEventListener("click", () => {
+        stopped = true;
 
-      $("deny")
-        .addEventListener(
-          "click",
-          () => {
+        $("allow").disabled = true;
+        $("deny").disabled = true;
 
-            $("allow")
-              .disabled = true;
+        $("trustedStatus").textContent =
+          "You chose not to share your location. No location was collected and the video will not open.";
 
-            $("deny")
-              .disabled = true;
+        set(
+          ref(db, "shares/" + shareId + "/status"),
+          "denied"
+        ).catch(console.warn);
+      });
 
-
-            $("trustedStatus")
-              .textContent =
-              "You chose not to share your location. No location was collected and the video will not open.";
-
-          }
-        );
-
-    }
+    }    }
 
   </script>
 
