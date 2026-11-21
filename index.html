@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LOC-GATE | Transparent Geo-Verification Redirect</title>
+    <style>
+        :root {
+            --bg-dark: #070b14;
+            --card-bg: rgba(17, 25, 40, 0.82);
+            --border-glow: rgba(16, 185, 129, 0.35);
+            --neon-green: #10b981;
+            --neon-hover: #059669;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #0f2922, var(--bg-dark) 60%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glow);
+            border-radius: 22px;
+            padding: 34px 26px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(16, 185, 129, 0.14);
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--neon-green);
+            border: 1px solid var(--border-glow);
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 18px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        p.subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 26px;
+        }
+
+        .features {
+            text-align: left;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 24px;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .features strong {
+            color: var(--neon-green);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: var(--neon-green);
+            color: #031911;
+            font-size: 15px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 18px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn:hover {
+            background: var(--neon-hover);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <span class="badge">LOC-GATE v1.0</span>
+        <h1>Location-Gated Link Service</h1>
+        <p class="subtitle">
+            Create transparent geo-verified redirect links with explicit visitor consent and real-time verification
+            logs.
+        </p>
+
+        <div class="features">
+            <div>✓ <strong>Short Links:</strong> Compact 5-character redirect IDs</div>
+            <div>✓ <strong>Explicit Consent:</strong> Clear location prompt before redirect</div>
+            <div>✓ <strong>Live Sync:</strong> Instant Firebase Realtime Database logs</div>
+        </div>
+
+        <a href="admin.html" class="btn">Open Creator Dashboard</a>
+    </div>
+
+</body>
+
+</html>
